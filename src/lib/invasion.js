@@ -40,7 +40,8 @@ Invasion.prototype.toString = function() {
     return util.format('%s (%s)\n' +
                        '%s (%s)\n' +
                        '%s\n' +
-                       '%d% - %s',
+                       '%d% - %s'+
+                       '\n--------------------',
                        this.node, this.planet, this.desc, this.type2,
                        this.reward2.toString(),
                        Math.round(this.completion * 100) / 100,

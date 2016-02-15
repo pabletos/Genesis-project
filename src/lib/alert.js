@@ -37,7 +37,8 @@ Alert.prototype.toString = function() {
                                 '%s (%s)\n' +
                                 '%s\n' +
                                 'level %d - %d\n' +
-                                'Expires in %s',
+                                'Expires in %s'+
+                                '\n--------------------',
                                 this.location, this.missionType, this.faction,
                                 this.reward.toString(), this.minLevel,
                                 this.maxLevel, this.getETAString());

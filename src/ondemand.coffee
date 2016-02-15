@@ -35,7 +35,7 @@ module.exports = (robot) ->
             robot.logger.error err
           else
             message =
-              if data then (alert.toString() for alert in data).join('\n\n')
+              if data then (alert.toString() for alert in data).join('\n')
               else 'There are no alerts at the moment'
             res.send message
 
@@ -49,7 +49,7 @@ module.exports = (robot) ->
             robot.logger.error err
           else
             message =
-              if data then (invasion.toString() for invasion in data).join('\n\n')
+              if data then (invasion.toString() for invasion in data).join('\n')
               else 'There are no invasions at the moment'
             res.send message
 
