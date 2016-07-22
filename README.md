@@ -70,7 +70,6 @@ Command | Listener ID | Description
 `hubot enemies` | `/enemies/` | Display list of active persistent enemies where they were last found
 `hubot sortie` | `/sortie/` | Display current sortie missions
 `hubot chart` | `/chart/` | Display mission progression chart
-`hubot rewards` | `/rewards/` | Display link to Rewards table
 `hubot tutorial <topic>` | `/tutorial\s?(.+)/` | Display link to topic's tutorial video
 `hubot profile <warframe>` | `/profile\s?(.+)/` | Display link to warframe profile video
 
