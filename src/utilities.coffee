@@ -15,9 +15,11 @@
 #   hubot cycle - Display the current day/night cycle for Earth and tell you how much time is left.
 #   hubot damage - Display link to Damage 2.0 infographic
 #   hubot efficiency chart - Display link to Duration/Efficienct chart
+#   hubot pc/price check/pricecheck <item or mod> - Display nexus-stats.com data for a particular crafted item (Ex.: Vauban prime).
 #   hubot shield - Display instructions for calculating shields
 #   hubot shield <base shields> <base level> <current level> - Display the current shields.
 #   hubot trial <in-game-name> - display link to search for stats for user
+#   hubot where (is) <item> - Display list of locations for requested item
 #
 # Author:
 #   nspacestd
@@ -26,11 +28,13 @@ util = require 'util'
 moment = require 'moment'
 md = require 'node-md-config'
 PriceCheck = require 'warframe-nexus-query'
+LocCheck = require 'warframe-location-query'
 
 dsUtil = require './lib/_utils.js'
 
 module.exports = (robot) ->
   priceCheckr = new PriceCheck()
+  locationCheckr = new LocCheck()
   
   getCurrentEarthCycle = ->
     hour = Math.floor(moment().valueOf() / 3600000) % 24
@@ -52,9 +56,9 @@ module.exports = (robot) ->
     format = '%sOperator, Earth is currently in %stime. Time remaining until %s: %s.%s'
     return util.format format, md.codeMulti, cycle, opposite, timePieces.join(' '), md.blockEnd
   
-  robot.respond /armor(?:\s+([\d\s]+))?/i, id:'hubot-warframe.armor', (res) ->
-    pattern3Params = new RegExp(/^(\d+)(?:\s+(\d+)\s+(\d+))?$/)
-    pattern1Param = new RegExp(/^(\d+)$/)
+  robot.respond /armor(?:\s+([\d+\.?\d*\s]+))?/i, id:'hubot-warframe.armor', (res) ->
+    pattern3Params = new RegExp(/(\d+\.?\d*)(?:\s+(\d+\.?\d*)\s+(\d+\.?\d*))?$/)
+    pattern1Param = new RegExp(/(\d+\.?\d*)$/)
     robot.logger.debug util.format('matched armor command. matching string: %s', res.match[1])
     params = res.match[1]
     
@@ -86,17 +90,17 @@ module.exports = (robot) ->
     res.send armorString
     
   robot.respond /chart/i, id:'hubot-warframe.chart', (res) ->
-    res.send string = "#{md.codeMulti}#{md.linkBegin}Chart"+
-          "#{md.linkMid}http://chart.morningstar-wf.com/"+
-          "#{md.linkEnd}#{md.blockEnd}"
+    res.send string = "#{md.linkBegin}Chart"+
+          "#{md.linkMid}http://chart.morningstar.ninja/"+
+          "#{md.linkEnd}"
   robot.respond /cycle/i, id:'hubot-warframe.cycle', (res) ->
     res.send getCurrentEarthCycle()
   robot.respond /damage/i, id:'hubot-warframe.damage', (res) ->  
-    damageURL = 'http://morningstar-wf.com/chart/Damage_2.0_Resistance_Flowchart.png'
-    res.send "#{md.codeMulti}#{md.linkBegin}Damage 2.0#{md.linkMid}#{damageURL}#{md.linkEnd}#{md.blockEnd}"
-  robot.respond /efficeincy\s?chart/, id:'hubot-warframe.efficiencychart', (res) ->
-    efficienctChartURL = 'http://morningstar-wf.com/chart/efficiency.png'
-    res.send res.send "#{md.codeMulti}#{md.linkBegin}Duration/Efficiency Balance Chart#{md.linkMid}#{efficienctChartURL}#{md.linkEnd}#{md.blockEnd}"
+    damageURL = 'http://morningstar.ninja/chart/Damage_2.0_Resistance_Flowchart.png'
+    res.send "#{md.linkBegin}Damage 2.0#{md.linkMid}#{damageURL}#{md.linkEnd}"
+  robot.respond /efficiency\s?chart/, id:'hubot-warframe.efficiencychart', (res) ->
+    efficienctChartURL = 'http://morningstar.ninja/chart/efficiency.png'
+    res.send "#{md.linkBegin}Duration/Efficiency Balance Chart#{md.linkMid}#{efficienctChartURL}#{md.linkEnd}"
   robot.respond /p(?:rice)?\s?c(?:heck)?(?:\s+([\w+\s]+))?/i, id:'hubot-warframe.pricecheck', (res) ->
     query = res.match[1]
     if query?
@@ -106,8 +110,8 @@ module.exports = (robot) ->
         res.send componentString
     else
       res.send "#{md.codeMulti}Usage: whereis <prime part/blueprint>#{md.blockEnd}"
-  robot.respond /shield(?:\s+([\d\s]+))?/, id:'hubot-warframe.shields', (res) ->
-    pattern3Params = new RegExp(/^(\d+)(?:\s+(\d+)\s+(\d+))?$/)
+  robot.respond /shield(?:\s+([\d+\.?\d*\s]+))?/, id:'hubot-warframe.shields', (res) ->
+    pattern3Params = new RegExp(/^(\d+\.?\d*)(?:\s+(\d+\.?\d*)\s+(\d+\.?\d*))?$/)
     robot.logger.debug util.format('matched shield command. matching string: %s', res.match[1])
     params = res.match[1]
     
@@ -127,7 +131,7 @@ module.exports = (robot) ->
     params = res.match[1]
   
     lorRegExp = /(?:(?:lor)|(?:law of retribution))\s*?(?:([\w+\s]+))?/i
-    jordasRegExp = /(?:jordas(?:\sverdict))(?:\s+([\w+\s]+))?/i
+    jordasRegExp = /(?:j(?:ordas)?(?:\s?v(?:erdict)?)?)(?:\s+([\w+\s]+))?/i
     
     baseURL = 'http://wf.christx.tw/'
     searchAppend = 'search.php?id='
@@ -150,4 +154,50 @@ module.exports = (robot) ->
         messageToSend = baseURL + jordasSearchAppend + encodeURIComponent name.replace(/\s/,'')
       else
         messageToSend = baseURL + jordasAppend
+    else if(typeof params != 'undefined')
+      messageToSend = baseURL + searchAppend + encodeURIComponent params.replace(/\s/,'')
     res.send messageToSend
+  robot.respond /where(?:\s?is)?(?:\s+([\w+\s]+))?/i, id:'hubot-warframe.where', (res) ->
+    query = res.match[1]
+    if query?
+      locationCheckr.getLocationsForComponent query, (err, componentStringList) ->
+        if err
+            return robot.logger.error err
+        res.send md.codeMulti+componentString+md.blockEnd for componentString in componentStringList
+    else
+      res.send "#{md.codeMulti}Usage: whereis <prime part/blueprint>#{md.blockEnd}"
+      
+  robot.respond /mod(.+)/i, id:'hubot-warframe.mod', (res) ->
+    type = res.match[1]
+    if not type
+      res.reply "#{md.codeMulti}Please specify a search term#{md.blockEnd}"
+    else
+      #default case
+      query = type.match(/(.+)/)[1]
+      robot.logger.debug("Searched for query: #{query}")
+      dsUtil.modSearch(query)
+        .then((message) =>
+          if typeof message != 'undefined'
+            res.send message
+          else
+            res.reply "#{md.codeMulti}Please specify a search term#{md.blockEnd}"
+        )
+        .catch(console.error)
+    
+    
+  robot.respond /wiki(.+)/i, id:'hubot-warframe.wiki', (res) ->
+    type = res.match[1]
+    if not type
+      res.reply "#{md.codeMulti}Please specify a search term#{md.blockEnd}"
+    else
+      #default case
+      query = type.match(/(.+)/)[1]
+      robot.logger.debug("Searched for query: #{query}")
+      dsUtil.wikiSearch(query)
+        .then((message) =>
+          if typeof message != 'undefined'
+            res.send message
+          else
+            res.reply "#{md.codeMulti}Please specify a search term#{md.blockEnd}"
+        )
+        .catch(console.error)

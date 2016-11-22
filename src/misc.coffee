@@ -13,6 +13,7 @@
 #
 # Author:
 #   nspacestd
+#   aliasfalse
 
 Users = require('./lib/users.js')
 
@@ -38,6 +39,15 @@ module.exports = (robot) ->
       else
         res.send 'Tracking stopped'
 
+  if robot.adapterName is 'discord'
+    robot.leave (res) ->
+      if res.message.user.id is robot.adapter.client.user.id
+        userDB.remove res.message.room, (err) ->
+          robot.logger.error err if err
+    robot.enter (res) ->
+      if res.message.user.id is robot.adapter.client.user.id
+        res.send 'Hello, Operator! Please type /start to begin tracking.'
+  
   if robot.adapterName is 'telegram'
     # Remove chat from the database when the bot is kicked, Telegram only
     robot.leave (res) ->
