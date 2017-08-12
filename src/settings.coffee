@@ -13,7 +13,6 @@
 #   hubot track <reward or event> - Start tracking reward or event, menu if no argument. For rewards to be tracked for alerts or invasions, it must also be tracked in settings.
 #   hubot untrack <reward or event> - Stop tracking reward or event. For rewards to be tracked for alerts or invasions, it must also be tracked in settings.
 #   hubot end (telegram only) - Hide custom keyboard
-#   hubot notify <reward or event> <message> - notify reward or event with a message added on the beginning
 #
 # Author:
 #   nspacestd
@@ -40,18 +39,18 @@ module.exports = (robot) ->
         keys = ['platform', 'track']
         replyWithKeyboard robot, res, text, keys
 
-  robot.respond /platform\s*(\w+)?/i, id:'hubot-warframe.tutorial', (res) ->
+  robot.respond /platform\s*(\w+)?/i, id:'hubot-warframe.platform', (res) ->
     platform = res.match[1]
     if not platform
       text = 'Choose your platform'
       keys = ('platform ' + k for k in platforms)
       replyWithKeyboard robot, res, text, keys
     else if platform.toUpperCase() in platforms
-      userDB.setPlatform res.message.room, platform, (err) ->
+      userDB.setPlatform res.message.room, platform.toUpperCase(), (err) ->
         if err
           robot.logger.error err
         else
-          res.reply 'Platform changed to ' + platform
+          res.reply 'Platform changed to ' + platform.toUpperCase()
     else
       res.reply 'Invalid platform'
 

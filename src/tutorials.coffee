@@ -9,7 +9,7 @@
 #
 # Commands:
 #   hubot tutorial <topic> - Display link to the topic's tutorial video
-#   hubot profile <warframe> - Display link to profile video for specified warframe
+#   hubot frame profile <warframe> - Display link to profile video for specified warframe
 #
 # Author:
 #   nspacestd
@@ -26,7 +26,7 @@ module.exports = (robot) ->
   robot.respond /tutorial\s?(.+)?/, id:'hubot-warframe.tutorial', (res) ->
     tutorialReg = res.match[1]      
     if(tutorialReg)
-      tutorialFormat = "#{md.codeMulti}#{md.linkBegin}Warframe Tutorial | %s#{md.linkMid}%s#{md.linkEnd}#{md.blockEnd}"
+      tutorialFormat = "#{md.linkBegin}Warframe Tutorial | %s#{md.linkMid}%s#{md.linkEnd}"
 
       for tutorial of tutorials
         robot.logger.debug tutorials[tutorial].regex
@@ -42,10 +42,10 @@ module.exports = (robot) ->
         availableTutorials += "  \u2022 #{tutorial}#{md.lineEnd}"
       res.send availableTutorials+"#{md.blockEnd}"
     
-  robot.respond /profile\s?(.+)?/, id:'hubot-warframe.tutorial', (res) ->
+  robot.respond /frame(?:\s?profile)?(.+)?/, id:'hubot-warframe.profile', (res) ->
     warframe = res.match[1]
     if(warframe)
-      profileFormat = "#{md.codeMulti}#{md.linkBegin}Warframe Profile | %s#{md.linkMid}%s#{md.linkEnd}#{md.blockEnd}"
+      profileFormat = "#{md.linkBegin}Warframe Profile | %s#{md.linkMid}%s#{md.linkEnd}"
       for profile of profiles
         robot.logger.debug profiles[profile].regex
         robot.logger.debug profiles[profile].name
@@ -53,7 +53,7 @@ module.exports = (robot) ->
         if new RegExp(profiles[profile].regex, "i").test(warframe)
           res.send util.format profileFormat, profiles[profile].name, profiles[profile].url
           return;
-      res.send "#{md.codeMulti}Apologies, Operator, there is no such Warframe profile registered in my system.#{md.blockEnd}"
+      res.send "#{md.codeMulti}Apologies, Operator, there is no such Warframe registered in my system.#{md.blockEnd}"
     else
       availableProfiles = "#{md.codeMulti}Available profiles:#{md.lineEnd}"
       for profile of profiles

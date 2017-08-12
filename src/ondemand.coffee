@@ -27,7 +27,6 @@
 #   hubot simaris - Display current Synthesis target
 #   hubot sortie - Display current sortie missions
 #   hubot syndicate <syndicate> - Display syndicate mission nodes
-#   hubot where (is) <item> - Display list of locations for requested item
 #
 # Author:
 #   nspacestd
@@ -165,7 +164,7 @@ module.exports = (robot) ->
           return robot.logger.error err
         res.send fissuresString 
   
-  robot.respond /flash(?:\sdeals)/i, id:'hubot-warframe.flashdeals', (res) ->
+  robot.respond /flash(?:\s?deals?)/i, id:'hubot-warframe.flashdeals', (res) ->
     userDB.getPlatform res.message.room, (err, platform) ->
       if err
         return robot.logger.error err
@@ -291,13 +290,3 @@ module.exports = (robot) ->
         syndicates.forEach (syndicate) ->
             syndicateString += "  \u2022 #{syndicate}#{md.lineEnd}" 
         res.send syndicateString += md.blockEnd
-    
-  robot.respond /where(?:\s?is)?(?:\s+([\w+\s]+))?/i, id:'hubot-warframe.where', (res) ->
-    query = res.match[1]
-    if query?
-      Worldstate.getComponentFromQuery query, (err, componentString) ->
-        if err
-            return robot.logger.error err
-        res.send componentString
-    else
-      res.send "#{md.codeMulti}Usage: whereis <prime part/blueprint>#{md.blockEnd}"
